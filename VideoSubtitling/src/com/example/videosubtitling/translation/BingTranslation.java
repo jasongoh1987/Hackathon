@@ -6,8 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -20,10 +18,14 @@ import android.util.Xml;
 import com.example.videosubtitling.common.DebugLogger;
 
 public class BingTranslation {
+
+	public static final String MALAY = "ms";
+	public static final String ENGLISH = "en";
+
 	// NULL PARSER_REQUIRED_NAMESPACE will match any name space with any name
 	private static final String PARSER_REQUIRED_NAMESPACE = null;
 
-	private List<Entry> parse(InputStream in) throws XmlPullParserException,
+	private String parse(InputStream in) throws XmlPullParserException,
 			IOException {
 		try {
 			XmlPullParser parser = Xml.newPullParser();
@@ -36,31 +38,18 @@ public class BingTranslation {
 		}
 	}
 
-	public static class Entry {
-		private final String mLink;
-
-		private Entry(String link) {
-			this.mLink = link;
-		}
-
-		public String getLink() {
-			return mLink;
-		}
-	}
-
 	/**
 	 * Read <entry> tag enclosed in <feed> tag from the parser
 	 * 
 	 * @param parser
 	 *            Parser to read from
-	 * @return List of Entries(Entry) populated with the url link, or empty list
-	 *         if no entry found
+	 * @return translation string, or empty list if no entry found
 	 * @throws XmlPullParserException
 	 * @throws IOException
 	 */
-	private List<Entry> readFeed(XmlPullParser parser)
+	private String readFeed(XmlPullParser parser)
 			throws XmlPullParserException, IOException {
-		List<Entry> entries = new ArrayList<Entry>();
+		String entry = null;
 
 		parser.require(XmlPullParser.START_TAG, PARSER_REQUIRED_NAMESPACE,
 				"feed");
@@ -71,15 +60,15 @@ public class BingTranslation {
 			String name = parser.getName();
 			// Starts by looking for the entry tag
 			if (name.equals("entry")) {
-				String link = readEntry(parser);
-				if (link != null) {
-					entries.add(new Entry(link));
+				String translatedText = readEntry(parser);
+				if (translatedText != null) {
+					entry = translatedText;
 				}
 			} else {
 				skip(parser);
 			}
 		}
-		return entries;
+		return entry;
 	}
 
 	/**
@@ -87,7 +76,7 @@ public class BingTranslation {
 	 * 
 	 * @param parser
 	 *            Parser to read from
-	 * @return Text for found url link, or null if not found
+	 * @return Text for found translation, or null if not found
 	 * @throws XmlPullParserException
 	 * @throws IOException
 	 */
@@ -118,7 +107,7 @@ public class BingTranslation {
 	 * 
 	 * @param parser
 	 *            Parser to read from
-	 * @return Text for found link, or null if not found
+	 * @return Text for found translation, or null if not found
 	 * @throws IOException
 	 * @throws XmlPullParserException
 	 */
@@ -144,17 +133,17 @@ public class BingTranslation {
 	}
 
 	/**
-	 * Read <d:MediaUrl> tag enclosed in <m:properties> tag from the parser
+	 * Read <d:Text> tag enclosed in <m:properties> tag from the parser
 	 * 
 	 * @param parser
 	 *            Parser to read from
-	 * @return Text of url link if found, else null
+	 * @return Text of url translation if found, else null
 	 * @throws IOException
 	 * @throws XmlPullParserException
 	 */
 	private String readMediaUrl(XmlPullParser parser) throws IOException,
 			XmlPullParserException {
-		String link = null;
+		String translatedText = null;
 		parser.require(XmlPullParser.START_TAG, PARSER_REQUIRED_NAMESPACE,
 				"m:properties");
 		while (parser.next() != XmlPullParser.END_TAG) {
@@ -163,33 +152,33 @@ public class BingTranslation {
 			}
 			String name = parser.getName();
 
-			if (name.equals("d:MediaUrl")) {
-				link = readLink(parser);
+			if (name.equals("d:Text")) {
+				translatedText = readTranslation(parser);
 			} else {
 				skip(parser);
 			}
 		}
-		return link;
+		return translatedText;
 	}
 
 	/**
-	 * Read link inside the <d:MediaUrl> tag from the parser
+	 * Read translation inside the <d:Text> tag from the parser
 	 * 
 	 * @param parser
 	 *            Parser to read from
-	 * @return Text enclosed in the <d:MediaUrl> tag or null if the enclosed
-	 *         text doesn't exist
+	 * @return Text enclosed in the <d:Text> tag or null if the enclosed text
+	 *         doesn't exist
 	 * @throws IOException
 	 * @throws XmlPullParserException
 	 */
-	private String readLink(XmlPullParser parser) throws IOException,
+	private String readTranslation(XmlPullParser parser) throws IOException,
 			XmlPullParserException {
 		parser.require(XmlPullParser.START_TAG, PARSER_REQUIRED_NAMESPACE,
-				"d:MediaUrl");
-		String link = readText(parser);
+				"d:Text");
+		String translatedText = readText(parser);
 		parser.require(XmlPullParser.END_TAG, PARSER_REQUIRED_NAMESPACE,
-				"d:MediaUrl");
-		return link;
+				"d:Text");
+		return translatedText;
 	}
 
 	/**
@@ -231,21 +220,26 @@ public class BingTranslation {
 	}
 
 	/**
-	 * Get number of required entries of images url based on serach text
+	 * Get translation for input text from one language to the other language
 	 * 
 	 * @param textToTranslate
-	 *            search text for the image search query
-	 * @param numberOfEntry
-	 *            number of entries required
-	 * @return List of image url entries based on search text with length of the
-	 *         input numberOfEntry
+	 *            the text to translate
+	 * @param fromLanguageCode
+	 *            the language which is translating from
+	 * @param toLanguageCode
+	 *            the language to translate to
+	 * @return String which is translated
 	 */
-	public List<Entry> getTranslation(String textToTranslate, int numberOfEntry) {
-		List<Entry> imageLinkList = null;
+	public String getTranslation(String textToTranslate,
+			String fromLanguageCode, String toLanguageCode) {
+		String translatedString = textToTranslate;
 		textToTranslate = textToTranslate.replaceAll(" ", "%20");
 		String accountKey = "/wKRwjudV0InQ4JXDnYinF/5OWCEzhvVq8p3+/ajzpU";
-		String query = "?Query=%27";
-		String bingImageSearchBasedUrl = "https://api.datamarket.azure.com/Bing/MicrosoftTranslator/v1/Translate?Text=%27No%27&To=%27ms%27&From=%27en%27";
+		String bingTranslateUrl = "https://api.datamarket.azure.com/Bing/MicrosoftTranslator/v1/Translate?Text=%27"
+				+ textToTranslate
+				+ "%27&To=%27"
+				+ toLanguageCode
+				+ "%27&From=%27" + fromLanguageCode + "%27";
 
 		byte[] accountKeyBytes = Base64.encode(
 				(accountKey + ":" + accountKey).getBytes(), Base64.URL_SAFE
@@ -255,7 +249,7 @@ public class BingTranslation {
 		HttpsURLConnection conn = null;
 
 		try {
-			url = new URL(bingImageSearchBasedUrl);
+			url = new URL(bingTranslateUrl);
 			conn = (HttpsURLConnection) url.openConnection();
 			conn.setRequestMethod("GET");
 			conn.setConnectTimeout(15000);
@@ -264,18 +258,11 @@ public class BingTranslation {
 			conn.setDoInput(true);
 			conn.setRequestProperty("Authorization", "Basic " + accountKeyEnc);
 
-			InputStream input = conn.getInputStream();
-
-			System.out.println(convertStreamToString(input));
-			// try {
-			// imageLinkList = parse(conn.getInputStream());
-			//
-			// for (Entry entry : imageLinkList) {
-			// DebugLogger.log(BingTranslation.class, entry.getLink());
-			// }
-			// } catch (XmlPullParserException e) {
-			// e.printStackTrace();
-			// }
+			try {
+				translatedString = parse(conn.getInputStream());
+			} catch (XmlPullParserException e) {
+				e.printStackTrace();
+			}
 
 			conn.disconnect();
 
@@ -301,11 +288,6 @@ public class BingTranslation {
 			}
 			e.printStackTrace();
 		}
-		return imageLinkList;
-	}
-
-	static String convertStreamToString(InputStream is) {
-		java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
-		return s.hasNext() ? s.next() : "";
+		return translatedString;
 	}
 }
