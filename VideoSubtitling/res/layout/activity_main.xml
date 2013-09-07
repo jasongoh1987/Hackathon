@@ -9,36 +9,61 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity" >
 
-    <Button
-        android:id="@+id/start_recording"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:onClick="onClick"
-        android:text="@string/start_audio_recording" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1" >
 
-    <Button
-        android:id="@+id/stop_recording"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:onClick="onClick"
-        android:text="@string/stop_audio_recording" />
+        <VideoView
+            android:id="@+id/video_view"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" />
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/start_playing"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:onClick="onClick"
-        android:text="@string/start_audio_playback" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:orientation="vertical" >
 
-    <Button
-        android:id="@+id/stop_playing"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:onClick="onClick"
-        android:text="@string/stop_audio_playback" />
+        <ProgressBar
+            android:id="@+id/video_progress_bar"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="10dp"
+            android:layout_gravity="bottom" />
+
+        <Button
+            android:id="@+id/start_recording"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:onClick="onButtonClick"
+            android:text="@string/start_audio_recording" />
+
+        <Button
+            android:id="@+id/stop_recording"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:onClick="onButtonClick"
+            android:text="@string/stop_audio_recording" />
+
+        <Button
+            android:id="@+id/start_playing"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:onClick="onButtonClick"
+            android:text="@string/start_audio_playback" />
+
+        <Button
+            android:id="@+id/stop_playing"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:onClick="onButtonClick"
+            android:text="@string/stop_audio_playback" />
+    </LinearLayout>
 
 </LinearLayout>
