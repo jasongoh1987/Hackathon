@@ -3,7 +3,7 @@ package com.example.videosubtitling;
 import java.io.File;
 import java.io.IOException;
 import android.app.Activity;
-import android.graphics.Path;
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaRecorder;
@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -70,6 +71,19 @@ public class MainActivity extends Activity
 	}
 
 	@Override
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		switch (item.getItemId())
+		{
+		case R.id.action_settings:
+			Intent intent = new Intent(this, SettingsActivity.class);
+			startActivity(intent);
+			break;
+		}
+		return true;
+	}
+
+	@Override
 	public void onPause()
 	{
 		super.onPause();
@@ -84,6 +98,15 @@ public class MainActivity extends Activity
 			mPlayer.release();
 			mPlayer = null;
 		}
+	}
+
+	@Override
+	protected void onDestroy()
+	{
+		// clear progress bar progress
+		mProgressBar.setProgress(100);
+
+		super.onDestroy();
 	}
 
 	/**
@@ -194,8 +217,8 @@ public class MainActivity extends Activity
 	 */
 	private class PlayVideoAsyncTask extends AsyncTask<Void, Integer, Void>
 	{
-		int mDuration = 0;
-		int mCurrent = 0;
+		private int mDuration = 0;
+		private int mCurrent = 0;
 
 		PlayVideoAsyncTask(String videoPath)
 		{
@@ -222,8 +245,6 @@ public class MainActivity extends Activity
 			do
 			{
 				mCurrent = mVideoView.getCurrentPosition();
-				System.out.println("duration - " + mDuration + " current- "
-				    + mCurrent);
 				try
 				{
 					publishProgress((int) (mCurrent * 100 / mDuration));
@@ -244,7 +265,6 @@ public class MainActivity extends Activity
 		protected void onProgressUpdate(Integer... values)
 		{
 			super.onProgressUpdate(values);
-			System.out.println(values[0]);
 			mProgressBar.setProgress(values[0]);
 		}
 	}
