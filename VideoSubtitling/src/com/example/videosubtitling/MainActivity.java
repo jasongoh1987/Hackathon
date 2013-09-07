@@ -1,9 +1,7 @@
 package com.example.videosubtitling;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -15,7 +13,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -23,7 +20,6 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.VideoView;
-
 import com.example.videosubtitling.speechtotext.AppInfo;
 import com.example.videosubtitling.translation.BackgroundTranslationTask;
 import com.nuance.nmdp.speechkit.Prompt;
@@ -44,7 +40,7 @@ public class MainActivity extends Activity
 	private Recognizer.Listener mRecognizerListener;
 	private Handler mHandler;
 
-	private static String mFileName = null;
+	private String mFileName = null;
 	private String mVideoFileName = "vid.mp4"; // TODO: allow user to specify
 	                                           // the video
 
@@ -214,22 +210,30 @@ public class MainActivity extends Activity
 		};
 	}
 
-	private void setResult(String result) {
-		if (mCapturedText != null) {
+	private void setResult(String result)
+	{
+		if (mCapturedText != null)
+		{
 			mCapturedText.setText(result);
 			translateCapturedTextToPreferredLanguage(result);
 		}
 	}
 
-	private void translateCapturedTextToPreferredLanguage(String textToTranslate) {
-		try {
+	private void translateCapturedTextToPreferredLanguage(String textToTranslate)
+	{
+		try
+		{
 			String translatedText = new BackgroundTranslationTask().execute(
-					new String[] { textToTranslate }).get();
+			    new String[] { textToTranslate }).get();
 			mTranslatedText.setText(translatedText);
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e)
+		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (ExecutionException e) {
+		}
+		catch (ExecutionException e)
+		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -317,14 +321,6 @@ public class MainActivity extends Activity
 			stopRecognizeSpeech();
 			break;
 
-		case R.id.start_playing:
-			startAudioPlayback();
-			break;
-
-		case R.id.stop_playing:
-			stopAudioPlayback();
-			break;
-
 		default:
 			break;
 		}
@@ -343,66 +339,6 @@ public class MainActivity extends Activity
 		{
 			mVideoView.start();
 		}
-	}
-
-	/**
-	 * Start audio recording
-	 */
-	private void startAudioRecording()
-	{
-		mRecorder = new MediaRecorder();
-		mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-		mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-		mRecorder.setOutputFile(mFileName);
-		mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-
-		try
-		{
-			mRecorder.prepare();
-		}
-		catch (IOException e)
-		{
-			Log.e(TAG, "prepare() failed");
-		}
-
-		mRecorder.start();
-	}
-
-	/**
-	 * Stop audio recording
-	 */
-	private void stopAudioRecording()
-	{
-		mRecorder.stop();
-		mRecorder.release();
-		mRecorder = null;
-	}
-
-	/**
-	 * Start audio playback
-	 */
-	private void startAudioPlayback()
-	{
-		mPlayer = new MediaPlayer();
-		try
-		{
-			mPlayer.setDataSource(mFileName);
-			mPlayer.prepare();
-			mPlayer.start();
-		}
-		catch (IOException e)
-		{
-			Log.e(TAG, "prepare() failed");
-		}
-	}
-
-	/**
-	 * Stop audio playback
-	 */
-	private void stopAudioPlayback()
-	{
-		mPlayer.release();
-		mPlayer = null;
 	}
 
 	@Override
