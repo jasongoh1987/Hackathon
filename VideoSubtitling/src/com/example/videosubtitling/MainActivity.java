@@ -1,8 +1,7 @@
 package com.example.videosubtitling;
 
-import com.example.testapp.R;
-import android.os.Bundle;
 import android.app.Activity;
+import android.os.Bundle;
 import android.view.Menu;
 
 public class MainActivity extends Activity
