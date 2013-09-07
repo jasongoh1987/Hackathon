@@ -1,18 +1,25 @@
 package com.example.videosubtitling;
 
+import java.io.File;
 import java.io.IOException;
 
 import android.app.Activity;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaRecorder;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.VideoView;
 
 import com.example.videosubtitling.speechtotext.AppInfo;
 import com.nuance.nmdp.speechkit.Prompt;
@@ -23,7 +30,9 @@ import com.nuance.nmdp.speechkit.SpeechKit;
 
 public class MainActivity extends Activity {
 	private static final String TAG = "AudioRecordTest";
-	private static final String AUDIO_FILE_NAME = "/audiorecordtest.3gp";
+	private static final String ENVIRONMENT_PATH = Environment
+			.getExternalStorageDirectory().getAbsolutePath() + File.separator;
+	private static final String AUDIO_FILE_NAME = "audiorecordtest.3gp";
 
 	private static final int LISTENING_DIALOG = 0;
 	private Recognizer mCurrentRecognizer;
@@ -31,8 +40,13 @@ public class MainActivity extends Activity {
 	private Handler mHandler;
 
 	private static String mFileName = null;
+	private String mVideoFileName = "vid.mp4"; // TODO: allow user to specify
+												// the video
+
 	private MediaRecorder mRecorder = null;
 	private MediaPlayer mPlayer = null;
+	private VideoView mVideoView;
+	private ProgressBar mProgressBar;
 
 	private static SpeechKit sSpeechKit;
 
@@ -73,6 +87,25 @@ public class MainActivity extends Activity {
 		// Set recording output path
 		mFileName = Environment.getExternalStorageDirectory().getAbsolutePath()
 				+ AUDIO_FILE_NAME;
+
+		mVideoView = (VideoView) findViewById(R.id.video_view);
+		mProgressBar = (ProgressBar) findViewById(R.id.video_progress_bar);
+
+		mVideoView.setOnTouchListener(new View.OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				onVideoTouch();
+				return false;
+			}
+		});
+
+		// Set recording output path
+		mFileName = ENVIRONMENT_PATH + AUDIO_FILE_NAME;
+
+		// Play video
+		String videoPath = ENVIRONMENT_PATH + mVideoFileName;
+		new PlayVideoAsyncTask(videoPath).execute();
 	}
 
 	private void startRecognizeSpeech() {
@@ -202,7 +235,7 @@ public class MainActivity extends Activity {
 	/**
 	 * Method to handle respective button clicks.
 	 */
-	public void onClick(View view) {
+	public void onButtonClick(View view) {
 		switch (view.getId()) {
 		case R.id.start_recording:
 			// startAudioRecording();
@@ -224,6 +257,17 @@ public class MainActivity extends Activity {
 
 		default:
 			break;
+		}
+	}
+
+	/**
+	 * Method to handle video's behavior (pause/resume video) upon user touch.
+	 */
+	private void onVideoTouch() {
+		if (mVideoView.isPlaying()) {
+			mVideoView.pause();
+		} else {
+			mVideoView.start();
 		}
 	}
 
@@ -284,5 +328,54 @@ public class MainActivity extends Activity {
 		SpeechKit sk = sSpeechKit;
 		sSpeechKit = null; // Prevent onDestroy() from releasing SpeechKit
 		return sk;
+	}
+
+	/**
+	 * Class to play the video based on the path passed in.
+	 */
+	private class PlayVideoAsyncTask extends AsyncTask<Void, Integer, Void> {
+		int mDuration = 0;
+		int mCurrent = 0;
+
+		PlayVideoAsyncTask(String videoPath) {
+			mVideoView.setVideoURI(Uri.parse(videoPath));
+
+			mProgressBar.setProgress(0);
+			mProgressBar.setMax(100);
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+
+			mVideoView.start();
+			mVideoView.setOnPreparedListener(new OnPreparedListener() {
+
+				public void onPrepared(MediaPlayer mp) {
+					mDuration = mVideoView.getDuration();
+				}
+			});
+
+			do {
+				mCurrent = mVideoView.getCurrentPosition();
+				System.out.println("duration - " + mDuration + " current- "
+						+ mCurrent);
+				try {
+					publishProgress((int) (mCurrent * 100 / mDuration));
+					if (mProgressBar.getProgress() >= 100) {
+						break;
+					}
+				} catch (Exception e) {
+				}
+			} while (mProgressBar.getProgress() <= 100);
+
+			return null;
+		}
+
+		@Override
+		protected void onProgressUpdate(Integer... values) {
+			super.onProgressUpdate(values);
+			System.out.println(values[0]);
+			mProgressBar.setProgress(values[0]);
+		}
 	}
 }
