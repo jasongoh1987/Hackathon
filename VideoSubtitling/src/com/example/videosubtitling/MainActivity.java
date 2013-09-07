@@ -2,6 +2,7 @@ package com.example.videosubtitling;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import android.app.Activity;
 import android.media.AudioManager;
@@ -22,6 +23,7 @@ import android.widget.TextView;
 import android.widget.VideoView;
 
 import com.example.videosubtitling.speechtotext.AppInfo;
+import com.example.videosubtitling.translation.BackgroundTranslationTask;
 import com.nuance.nmdp.speechkit.Prompt;
 import com.nuance.nmdp.speechkit.Recognition;
 import com.nuance.nmdp.speechkit.Recognizer;
@@ -47,6 +49,8 @@ public class MainActivity extends Activity {
 	private MediaPlayer mPlayer = null;
 	private VideoView mVideoView;
 	private ProgressBar mProgressBar;
+	private TextView mCapturedText;
+	private TextView mTranslatedText;
 
 	private static SpeechKit sSpeechKit;
 
@@ -90,6 +94,8 @@ public class MainActivity extends Activity {
 
 		mVideoView = (VideoView) findViewById(R.id.video_view);
 		mProgressBar = (ProgressBar) findViewById(R.id.video_progress_bar);
+		mCapturedText = (TextView) findViewById(R.id.captured_text);
+		mTranslatedText = (TextView) findViewById(R.id.translated_text);
 
 		mVideoView.setOnTouchListener(new View.OnTouchListener() {
 
@@ -189,9 +195,24 @@ public class MainActivity extends Activity {
 	}
 
 	private void setResult(String result) {
-		TextView t = (TextView) findViewById(R.id.translated_text);
-		if (t != null)
-			t.setText(result);
+		if (mCapturedText != null) {
+			mCapturedText.setText(result);
+			translateCapturedTextToPreferredLanguage(result);
+		}
+	}
+
+	private void translateCapturedTextToPreferredLanguage(String textToTranslate) {
+		try {
+			String translatedText = new BackgroundTranslationTask().execute(
+					new String[] { textToTranslate }).get();
+			mTranslatedText.setText(translatedText);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	private void setResults(Recognition.Result[] results) {
