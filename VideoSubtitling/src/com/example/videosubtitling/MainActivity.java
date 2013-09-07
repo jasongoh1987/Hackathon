@@ -1,7 +1,6 @@
 package com.example.videosubtitling;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import android.app.Activity;
@@ -15,7 +14,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -43,7 +41,7 @@ public class MainActivity extends Activity {
 	private Recognizer.Listener mRecognizerListener;
 	private Handler mHandler;
 
-	private static String mFileName = null;
+	private String mFileName = null;
 	private String mVideoFileName = "vid.mp4"; // TODO: allow user to specify
 												// the video
 
@@ -196,9 +194,8 @@ public class MainActivity extends Activity {
 		};
 	}
 
-	private void setResult(final String result) {
+	private void setResult(String result) {
 		if (mCapturedText != null) {
-			System.out.println(result);
 			mCapturedText.setText(result);
 			if (!result.isEmpty()) {
 				translateCapturedTextToPreferredLanguage(result);
@@ -297,14 +294,6 @@ public class MainActivity extends Activity {
 			stopRecognizeSpeech();
 			break;
 
-		case R.id.start_playing:
-			startAudioPlayback();
-			break;
-
-		case R.id.stop_playing:
-			stopAudioPlayback();
-			break;
-
 		default:
 			break;
 		}
@@ -319,56 +308,6 @@ public class MainActivity extends Activity {
 		} else {
 			mVideoView.start();
 		}
-	}
-
-	/**
-	 * Start audio recording
-	 */
-	private void startAudioRecording() {
-		mRecorder = new MediaRecorder();
-		mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-		mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-		mRecorder.setOutputFile(mFileName);
-		mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-
-		try {
-			mRecorder.prepare();
-		} catch (IOException e) {
-			Log.e(TAG, "prepare() failed");
-		}
-
-		mRecorder.start();
-	}
-
-	/**
-	 * Stop audio recording
-	 */
-	private void stopAudioRecording() {
-		mRecorder.stop();
-		mRecorder.release();
-		mRecorder = null;
-	}
-
-	/**
-	 * Start audio playback
-	 */
-	private void startAudioPlayback() {
-		mPlayer = new MediaPlayer();
-		try {
-			mPlayer.setDataSource(mFileName);
-			mPlayer.prepare();
-			mPlayer.start();
-		} catch (IOException e) {
-			Log.e(TAG, "prepare() failed");
-		}
-	}
-
-	/**
-	 * Stop audio playback
-	 */
-	private void stopAudioPlayback() {
-		mPlayer.release();
-		mPlayer = null;
 	}
 
 	@Override
