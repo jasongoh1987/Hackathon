@@ -9,6 +9,9 @@
     <string name="stop_audio_playback">Stop Audio Playback</string>
     <string name="button_stop">Stop</string>
     <string name="translate_to_language">translateToLanguage</string>
-    
+    <string name="detected_language_label">From English</string>
+    <string name="translated_language_label">To %1$s</string>
+    <string name="hint_detected_speech">Detected speech</string>
+    <string name="hint_translated_speech">Translated speech</string>
     
 </resources>

@@ -2,7 +2,6 @@ package com.example.videosubtitling;
 
 import java.io.File;
 import java.util.concurrent.ExecutionException;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -14,14 +13,16 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
-
 import com.example.videosubtitling.speechtotext.AppInfo;
 import com.example.videosubtitling.translation.BackgroundTranslationTask;
 import com.nuance.nmdp.speechkit.Prompt;
@@ -30,10 +31,11 @@ import com.nuance.nmdp.speechkit.Recognizer;
 import com.nuance.nmdp.speechkit.SpeechError;
 import com.nuance.nmdp.speechkit.SpeechKit;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity
+{
 	private static final String TAG = "AudioRecordTest";
 	private static final String ENVIRONMENT_PATH = Environment
-			.getExternalStorageDirectory().getAbsolutePath() + File.separator;
+	    .getExternalStorageDirectory().getAbsolutePath() + File.separator;
 	private static final String AUDIO_FILE_NAME = "audiorecordtest.3gp";
 
 	private static final int LISTENING_DIALOG = 0;
@@ -43,7 +45,7 @@ public class MainActivity extends Activity {
 
 	private String mFileName = null;
 	private String mVideoFileName = "vid.mp4"; // TODO: allow user to specify
-												// the video
+	                                           // the video
 	private static final int VIDEO_CHOOOSE_ID = 9;
 
 	private MediaRecorder mRecorder = null;
@@ -52,16 +54,21 @@ public class MainActivity extends Activity {
 	private ProgressBar mProgressBar;
 	private TextView mCapturedText;
 	private TextView mTranslatedText;
+	private TextView mTranslatedTextLabel;
+	private Button mStartAnalyzingButton;
+	private Button mStopAnalyzingButton;
 
 	private static SpeechKit sSpeechKit;
 
 	// Allow other activities to access the SpeechKit instance.
-	static SpeechKit getSpeechKit() {
+	static SpeechKit getSpeechKit()
+	{
 		return sSpeechKit;
 	}
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(Bundle savedInstanceState)
+	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
@@ -75,33 +82,48 @@ public class MainActivity extends Activity {
 		// If this Activity is being recreated due to a config change (e.g.
 		// screen rotation), check for the saved SpeechKit instance.
 		sSpeechKit = (SpeechKit) getLastNonConfigurationInstance();
-		if (sSpeechKit == null) {
+		if (sSpeechKit == null)
+		{
 			sSpeechKit = SpeechKit.initialize(getApplication()
-					.getApplicationContext(), AppInfo.SpeechKitAppId,
-					AppInfo.SpeechKitServer, AppInfo.SpeechKitPort,
-					AppInfo.SpeechKitSsl, AppInfo.SpeechKitApplicationKey);
+			    .getApplicationContext(), AppInfo.SpeechKitAppId,
+			    AppInfo.SpeechKitServer, AppInfo.SpeechKitPort,
+			    AppInfo.SpeechKitSsl, AppInfo.SpeechKitApplicationKey);
 			sSpeechKit.connect();
 			// TODO: Keep an eye out for audio prompts not working on the Droid
 			// 2 or other 2.2 devices.
 			Prompt beep = sSpeechKit
-					.defineAudioPrompt(com.example.videosubtitling.R.raw.beep);
+			    .defineAudioPrompt(com.example.videosubtitling.R.raw.beep);
 			sSpeechKit.setDefaultRecognizerPrompts(beep, Prompt.vibration(100),
-					null, null);
+			    null, null);
 		}
 
 		// Set recording output path
 		mFileName = Environment.getExternalStorageDirectory().getAbsolutePath()
-				+ AUDIO_FILE_NAME;
+		    + AUDIO_FILE_NAME;
 
 		mVideoView = (VideoView) findViewById(R.id.video_view);
 		mProgressBar = (ProgressBar) findViewById(R.id.video_progress_bar);
 		mCapturedText = (TextView) findViewById(R.id.captured_text);
 		mTranslatedText = (TextView) findViewById(R.id.translated_text);
+		mTranslatedTextLabel = (TextView) findViewById(R.id.translated_text_label);
+		mStartAnalyzingButton = (Button) findViewById(R.id.start_recording);
+		mStopAnalyzingButton = (Button) findViewById(R.id.stop_recording);
 
-		mVideoView.setOnTouchListener(new View.OnTouchListener() {
+		// Set stop analyzing button visibility to gone
+		mStopAnalyzingButton.setVisibility(View.GONE);
+
+		// Set translated text label language
+		String translatedTextFormat = getString(R.string.translated_language_label);
+		String translatedTextLabel = String.format(translatedTextFormat,
+		    LanguageSettingsManager.readLanguagePref());
+		mTranslatedTextLabel.setText(translatedTextLabel);
+
+		mVideoView.setOnTouchListener(new View.OnTouchListener()
+		{
 
 			@Override
-			public boolean onTouch(View v, MotionEvent event) {
+			public boolean onTouch(View v, MotionEvent event)
+			{
 				onVideoTouch();
 				return false;
 			}
@@ -115,20 +137,42 @@ public class MainActivity extends Activity {
 		new PlayVideoAsyncTask(videoPath).execute();
 	}
 
-	private void selectVideo() {
+	private void selectVideo()
+	{
 		Intent videoChooser = new Intent(Intent.ACTION_GET_CONTENT);
 		videoChooser.setType("video/*");
 		startActivityForResult(videoChooser, VIDEO_CHOOOSE_ID);
 	}
 
-	private void startRecognizeSpeech() {
+	/**
+	 * Show's the start analyzing button and hides the stop analyzing button.
+	 */
+	private void showStartAnalyzingButton()
+	{
+		mStartAnalyzingButton.setVisibility(View.VISIBLE);
+		mStopAnalyzingButton.setVisibility(View.GONE);
+	}
+
+	/**
+	 * Show's the stop analyzing button and hides the start analyzing button.
+	 */
+	private void showStopAnalyzingButton()
+	{
+		mStartAnalyzingButton.setVisibility(View.GONE);
+		mStopAnalyzingButton.setVisibility(View.VISIBLE);
+	}
+
+	private void startRecognizeSpeech()
+	{
+		showStopAnalyzingButton();
+
 		setResults(new Recognition.Result[0]);
 
 		// if (v == dictationButton) {
 		mCurrentRecognizer = getSpeechKit().createRecognizer(
-				Recognizer.RecognizerType.Dictation,
-				Recognizer.EndOfSpeechDetection.Long, "en_US",
-				mRecognizerListener, mHandler);
+		    Recognizer.RecognizerType.Dictation,
+		    Recognizer.EndOfSpeechDetection.Long, "en_US", mRecognizerListener,
+		    mHandler);
 		// } else {
 		// mCurrentRecognizer = getSpeechKit().createRecognizer(
 		// Recognizer.RecognizerType.Search,
@@ -138,19 +182,27 @@ public class MainActivity extends Activity {
 		mCurrentRecognizer.start();
 	}
 
-	private void stopRecognizeSpeech() {
+	private void stopRecognizeSpeech()
+	{
+		showStartAnalyzingButton();
 		mCurrentRecognizer.stopRecording();
 	}
 
-	private Recognizer.Listener createListener() {
-		return new Recognizer.Listener() {
+	private Recognizer.Listener createListener()
+	{
+		return new Recognizer.Listener()
+		{
 			@Override
-			public void onRecordingBegin(Recognizer recognizer) {
+			public void onRecordingBegin(Recognizer recognizer)
+			{
 
 				// Create a repeating task to update the audio level
-				Runnable r = new Runnable() {
-					public void run() {
-						if (mCurrentRecognizer != null) {
+				Runnable r = new Runnable()
+				{
+					public void run()
+					{
+						if (mCurrentRecognizer != null)
+						{
 							mHandler.postDelayed(this, 500);
 						}
 					}
@@ -159,12 +211,13 @@ public class MainActivity extends Activity {
 			}
 
 			@Override
-			public void onRecordingDone(Recognizer recognizer) {
-
+			public void onRecordingDone(Recognizer recognizer)
+			{
 			}
 
 			@Override
-			public void onError(Recognizer recognizer, SpeechError error) {
+			public void onError(Recognizer recognizer, SpeechError error)
+			{
 				if (recognizer != mCurrentRecognizer)
 					return;
 
@@ -174,83 +227,113 @@ public class MainActivity extends Activity {
 				String detail = error.getErrorDetail();
 				String suggestion = error.getSuggestion();
 
+				// Show toast message to user
 				if (suggestion == null)
 					suggestion = "";
-				setResult(detail + "\n" + suggestion);
+				String errorText = detail + "\n" + suggestion;
+				Toast.makeText(getApplicationContext(), errorText,
+				    Toast.LENGTH_LONG).show();
+
 				// for debugging purpose: printing out the speechkit session id
 				android.util.Log.d("Nuance SampleVoiceApp",
-						"Recognizer.Listener.onError: session id ["
-								+ getSpeechKit().getSessionId() + "]");
+				    "Recognizer.Listener.onError: session id ["
+				        + getSpeechKit().getSessionId() + "]");
+
+				showStartAnalyzingButton();
 			}
 
 			@Override
-			public void onResults(Recognizer recognizer, Recognition results) {
+			public void onResults(Recognizer recognizer, Recognition results)
+			{
 
 				mCurrentRecognizer = null;
 				int count = results.getResultCount();
 				Recognition.Result[] rs = new Recognition.Result[count];
-				for (int i = 0; i < count; i++) {
+				for (int i = 0; i < count; i++)
+				{
 					rs[i] = results.getResult(i);
 				}
 				setResults(rs);
 				// for debugging purpose: printing out the speechkit session id
 				android.util.Log.d("Nuance SampleVoiceApp",
-						"Recognizer.Listener.onResults: session id ["
-								+ getSpeechKit().getSessionId() + "]");
+				    "Recognizer.Listener.onResults: session id ["
+				        + getSpeechKit().getSessionId() + "]");
+
+				showStartAnalyzingButton();
 			}
 		};
 	}
 
-	private void setResult(String result) {
-		if (mCapturedText != null) {
+	private void setResult(String result)
+	{
+		if (mCapturedText != null)
+		{
 			mCapturedText.setText(result);
-			if (!result.isEmpty()) {
+			if (!result.isEmpty())
+			{
 				translateCapturedTextToPreferredLanguage(result);
-			} else if (mTranslatedText != null) {
+			}
+			else if (mTranslatedText != null)
+			{
 				mTranslatedText.setText("");
 			}
 		}
 	}
 
-	private void translateCapturedTextToPreferredLanguage(String textToTranslate) {
-		try {
+	private void translateCapturedTextToPreferredLanguage(String textToTranslate)
+	{
+		try
+		{
 			final String translatedText = new BackgroundTranslationTask()
-					.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
-							new String[] { textToTranslate }).get();
-			runOnUiThread(new Runnable() {
+			    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+			        new String[] { textToTranslate }).get();
+			runOnUiThread(new Runnable()
+			{
 
 				@Override
-				public void run() {
+				public void run()
+				{
 					mTranslatedText.setText(translatedText);
 				}
 
 			});
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e)
+		{
 			e.printStackTrace();
-		} catch (ExecutionException e) {
+		}
+		catch (ExecutionException e)
+		{
 			e.printStackTrace();
 		}
 	}
 
-	private void setResults(Recognition.Result[] results) {
+	private void setResults(Recognition.Result[] results)
+	{
 		System.out.println(results.length);
-		if (results.length > 0) {
+		if (results.length > 0)
+		{
 			setResult(results[0].getText());
-		} else {
+		}
+		else
+		{
 			setResult("");
 		}
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
+	public boolean onCreateOptionsMenu(Menu menu)
+	{
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
+	public boolean onOptionsItemSelected(MenuItem item)
+	{
+		switch (item.getItemId())
+		{
 		case R.id.action_settings:
 			Intent intent = new Intent(this, SettingsActivity.class);
 			startActivity(intent);
@@ -260,22 +343,27 @@ public class MainActivity extends Activity {
 	}
 
 	@Override
-	public void onPause() {
+	public void onPause()
+	{
 		super.onPause();
-		if (mRecorder != null) {
+		if (mRecorder != null)
+		{
 			mRecorder.release();
 			mRecorder = null;
 		}
 
-		if (mPlayer != null) {
+		if (mPlayer != null)
+		{
 			mPlayer.release();
 			mPlayer = null;
 		}
 	}
 
 	@Override
-	protected void onDestroy() {
-		if (sSpeechKit != null) {
+	protected void onDestroy()
+	{
+		if (sSpeechKit != null)
+		{
 			sSpeechKit.release();
 			sSpeechKit = null;
 		}
@@ -289,8 +377,10 @@ public class MainActivity extends Activity {
 	/**
 	 * Method to handle respective button clicks.
 	 */
-	public void onButtonClick(View view) {
-		switch (view.getId()) {
+	public void onButtonClick(View view)
+	{
+		switch (view.getId())
+		{
 		case R.id.start_recording:
 			// startAudioRecording();
 			startRecognizeSpeech();
@@ -309,16 +399,21 @@ public class MainActivity extends Activity {
 	/**
 	 * Method to handle video's behavior (pause/resume video) upon user touch.
 	 */
-	private void onVideoTouch() {
-		if (mVideoView.isPlaying()) {
+	private void onVideoTouch()
+	{
+		if (mVideoView.isPlaying())
+		{
 			mVideoView.pause();
-		} else {
+		}
+		else
+		{
 			mVideoView.start();
 		}
 	}
 
 	@Override
-	public Object onRetainNonConfigurationInstance() {
+	public Object onRetainNonConfigurationInstance()
+	{
 		// Save the SpeechKit instance, because we know the Activity will be
 		// immediately recreated.
 		SpeechKit sk = sSpeechKit;
@@ -329,11 +424,13 @@ public class MainActivity extends Activity {
 	/**
 	 * Class to play the video based on the path passed in.
 	 */
-	private class PlayVideoAsyncTask extends AsyncTask<Void, Integer, Void> {
+	private class PlayVideoAsyncTask extends AsyncTask<Void, Integer, Void>
+	{
 		private int mDuration = 0;
 		private int mCurrent = 0;
 
-		PlayVideoAsyncTask(String videoPath) {
+		PlayVideoAsyncTask(String videoPath)
+		{
 			mVideoView.setVideoURI(Uri.parse(videoPath));
 
 			mProgressBar.setProgress(0);
@@ -341,22 +438,30 @@ public class MainActivity extends Activity {
 		}
 
 		@Override
-		protected Void doInBackground(Void... params) {
-			mVideoView.setOnPreparedListener(new OnPreparedListener() {
+		protected Void doInBackground(Void... params)
+		{
+			mVideoView.setOnPreparedListener(new OnPreparedListener()
+			{
 
-				public void onPrepared(MediaPlayer mp) {
+				public void onPrepared(MediaPlayer mp)
+				{
 					mDuration = mVideoView.getDuration();
 				}
 			});
 
-			do {
-				try {
+			do
+			{
+				try
+				{
 					mCurrent = mVideoView.getCurrentPosition();
 					publishProgress((int) (mCurrent * 100 / mDuration));
-					if (mProgressBar.getProgress() >= 100) {
+					if (mProgressBar.getProgress() >= 100)
+					{
 						break;
 					}
-				} catch (Exception e) {
+				}
+				catch (Exception e)
+				{
 				}
 			} while (mProgressBar.getProgress() <= 100);
 
@@ -364,7 +469,8 @@ public class MainActivity extends Activity {
 		}
 
 		@Override
-		protected void onProgressUpdate(Integer... values) {
+		protected void onProgressUpdate(Integer... values)
+		{
 			super.onProgressUpdate(values);
 			mProgressBar.setProgress(values[0]);
 		}
