@@ -48,11 +48,11 @@ public class MainActivity extends Activity {
 	private Handler mHandler;
 
 	private String mFileName = null;
-	private String mVideoAbsolutePath = ENVIRONMENT_PATH + "vid.mp4"; // TODO:
-																		// allow
-																		// user
-																		// to
-																		// specify
+	private String mVideoAbsolutePath = null; // TODO:
+												// allow
+												// user
+												// to
+												// specify
 	// the video
 	private static final int VIDEO_CHOOOSE_ID = 9;
 
@@ -81,7 +81,7 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 
 		getActionBar().setBackgroundDrawable(
-		    new ColorDrawable(Color.parseColor("#42619C")));
+				new ColorDrawable(Color.parseColor("#42619C")));
 
 		setVolumeControlStream(AudioManager.STREAM_MUSIC); // So that the 'Media
 		// Volume' applies
@@ -126,18 +126,16 @@ public class MainActivity extends Activity {
 
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-				onVideoTouch();
+				if (mVideoAbsolutePath != null) {
+					onVideoTouch();
+				} else {
+					chooseVideo();
+				}
 				return false;
 			}
 		});
 
-		// Set recording output path
-		mFileName = ENVIRONMENT_PATH + AUDIO_FILE_NAME;
-
-		// Play video
-		String videoPath = mVideoAbsolutePath;
-		mPlayVideoTask = new PlayVideoAsyncTask(videoPath);
-		mPlayVideoTask.execute();
+		mPlayVideoTask = new PlayVideoAsyncTask(mVideoAbsolutePath);
 	}
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -424,9 +422,11 @@ public class MainActivity extends Activity {
 		}
 
 		public void selectVideo(String videoPath) {
-			mVideoView.setVideoURI(Uri.parse(videoPath));
-			mProgressBar.setProgress(0);
-			mProgressBar.setMax(100);
+			if (videoPath != null) {
+				mVideoView.setVideoURI(Uri.parse(videoPath));
+				mProgressBar.setProgress(0);
+				mProgressBar.setMax(100);
+			}
 		}
 
 		@Override
