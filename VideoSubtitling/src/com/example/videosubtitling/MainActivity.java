@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.concurrent.ExecutionException;
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnPreparedListener;
@@ -14,6 +15,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.view.Gravity;
+import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -44,8 +46,12 @@ public class MainActivity extends Activity
 	private Handler mHandler;
 
 	private String mFileName = null;
-	private String mVideoFileName = "vid.mp4"; // TODO: allow user to specify
-	                                           // the video
+	private String mVideoAbsolutePath = ENVIRONMENT_PATH + "vid.mp4"; // TODO:
+	                                                                  // allow
+	                                                                  // user
+	                                                                  // to
+	                                                                  // specify
+	// the video
 	private static final int VIDEO_CHOOOSE_ID = 9;
 
 	private MediaRecorder mRecorder = null;
@@ -59,6 +65,8 @@ public class MainActivity extends Activity
 	private Button mStopAnalyzingButton;
 
 	private static SpeechKit sSpeechKit;
+
+	private PlayVideoAsyncTask mPlayVideoTask;
 
 	// Allow other activities to access the SpeechKit instance.
 	static SpeechKit getSpeechKit()
@@ -133,11 +141,40 @@ public class MainActivity extends Activity
 		mFileName = ENVIRONMENT_PATH + AUDIO_FILE_NAME;
 
 		// Play video
-		String videoPath = ENVIRONMENT_PATH + mVideoFileName;
-		new PlayVideoAsyncTask(videoPath).execute();
+		String videoPath = mVideoAbsolutePath;
+		mPlayVideoTask = new PlayVideoAsyncTask(videoPath);
+		mPlayVideoTask.execute();
+		chooseVideo();
 	}
 
-	private void selectVideo()
+	protected void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		super.onActivityResult(requestCode, resultCode, data);
+
+		switch (requestCode)
+		{
+		case VIDEO_CHOOOSE_ID:
+			if (resultCode == RESULT_OK)
+			{
+				Uri selectedVideo = data.getData();
+				String[] filePathColumn = { MediaStore.Video.Media.DATA };
+				Cursor cursor = getContentResolver().query(selectedVideo,
+				    filePathColumn, null, null, null);
+				cursor.moveToFirst();
+				int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+				String filePath = cursor.getString(columnIndex);
+				cursor.close();
+				System.out.println(filePath);
+				mVideoAbsolutePath = filePath;
+				if (mPlayVideoTask != null)
+				{
+					mPlayVideoTask.selectVideo(mVideoAbsolutePath);
+				}
+			}
+		}
+	}
+
+	private void chooseVideo()
 	{
 		Intent videoChooser = new Intent(Intent.ACTION_GET_CONTENT);
 		videoChooser.setType("video/*");
@@ -235,11 +272,12 @@ public class MainActivity extends Activity
 				    Toast.LENGTH_LONG).show();
 
 				// for debugging purpose: printing out the speechkit session id
-				android.util.Log.d("Nuance SampleVoiceApp",
-				    "Recognizer.Listener.onError: session id ["
-				        + getSpeechKit().getSessionId() + "]");
-
-				showStartAnalyzingButton();
+				if (getSpeechKit() != null)
+				{
+					android.util.Log.d("Nuance SampleVoiceApp",
+					    "Recognizer.Listener.onError: session id ["
+					        + getSpeechKit().getSessionId() + "]");
+				}
 			}
 
 			@Override
@@ -431,8 +469,12 @@ public class MainActivity extends Activity
 
 		PlayVideoAsyncTask(String videoPath)
 		{
-			mVideoView.setVideoURI(Uri.parse(videoPath));
+			selectVideo(videoPath);
+		}
 
+		public void selectVideo(String videoPath)
+		{
+			mVideoView.setVideoURI(Uri.parse(videoPath));
 			mProgressBar.setProgress(0);
 			mProgressBar.setMax(100);
 		}
