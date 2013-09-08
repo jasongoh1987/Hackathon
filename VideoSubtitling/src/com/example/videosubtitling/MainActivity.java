@@ -35,6 +35,7 @@ import com.nuance.nmdp.speechkit.Recognition;
 import com.nuance.nmdp.speechkit.Recognizer;
 import com.nuance.nmdp.speechkit.SpeechError;
 import com.nuance.nmdp.speechkit.SpeechKit;
+import com.threemusketeer.videosubtitling.R;
 
 public class MainActivity extends Activity {
 	private static final String TAG = "AudioRecordTest";
@@ -102,7 +103,7 @@ public class MainActivity extends Activity {
 			// TODO: Keep an eye out for audio prompts not working on the Droid
 			// 2 or other 2.2 devices.
 			Prompt beep = sSpeechKit
-					.defineAudioPrompt(com.example.videosubtitling.R.raw.beep);
+					.defineAudioPrompt(com.threemusketeer.videosubtitling.R.raw.beep);
 			sSpeechKit.setDefaultRecognizerPrompts(beep, Prompt.vibration(100),
 					null, null);
 		}

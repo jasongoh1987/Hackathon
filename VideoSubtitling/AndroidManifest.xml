@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.videosubtitling"
+    package="com.threemusketeer.videosubtitling"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -16,7 +16,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
 
     <application
-        android:name=".common.ApplicationService"
+        android:name="com.example.videosubtitling.common.ApplicationService"
         android:allowBackup="true"
         android:icon="@drawable/icon"
         android:label="@string/app_name"

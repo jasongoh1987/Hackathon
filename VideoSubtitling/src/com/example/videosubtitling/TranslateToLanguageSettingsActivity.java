@@ -5,6 +5,8 @@ import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 
+import com.threemusketeer.videosubtitling.R;
+
 public class TranslateToLanguageSettingsActivity extends PreferenceActivity {
 	public static final String TRANSLATE_TO_LANGUAGE_PREF_KEY = "translateToLanguage";
 
