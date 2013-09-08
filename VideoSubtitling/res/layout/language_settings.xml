@@ -6,9 +6,106 @@
         <PreferenceScreen
             android:key="English"
             android:title="English" />
+
         <PreferenceScreen
             android:key="Malay"
             android:title="Malay" />
+
+        <PreferenceScreen
+            android:key="Arabic"
+            android:title="Arabic" />
+
+        <PreferenceScreen
+            android:key="Bulgarian"
+            android:title="Bulgarian" />
+
+        <PreferenceScreen
+            android:key="Catalan"
+            android:title="Catalan" />
+
+        <PreferenceScreen
+            android:key="Czech"
+            android:title="Czech" />
+
+        <PreferenceScreen
+            android:key="Danish"
+            android:title="Danish" />
+
+        <PreferenceScreen
+            android:key="Malay"
+            android:title="Malay" />
+
+        <PreferenceScreen
+            android:key="Malay"
+            android:title="Malay" />
+
+        <PreferenceScreen
+            android:key="German"
+            android:title="German" />
+
+        <PreferenceScreen
+            android:key="Greek"
+            android:title="Greek" />
+
+        <PreferenceScreen
+            android:key="Spanish"
+            android:title="Spanish" />
+
+        <PreferenceScreen
+            android:key="Estonian"
+            android:title="Estonian" />
+
+        <PreferenceScreen
+            android:key="Persian"
+            android:title="Persian" />
+
+        <PreferenceScreen
+            android:key="Finnish"
+            android:title="Finnish" />
+
+        <PreferenceScreen
+            android:key="French"
+            android:title="French" />
+
+        <PreferenceScreen
+            android:key="Hebrew"
+            android:title="Hebrew" />
+
+        <PreferenceScreen
+            android:key="Hindi"
+            android:title="Hindi" />
+
+        <PreferenceScreen
+            android:key="Haitian"
+            android:title="Haitian" />
+
+        <PreferenceScreen
+            android:key="Hungarian"
+            android:title="Hungarian" />
+
+        <PreferenceScreen
+            android:key="Indonesian"
+            android:title="Indonesian" />
+
+        <PreferenceScreen
+            android:key="Italian"
+            android:title="Italian" />
+
+        <PreferenceScreen
+            android:key="Japanese"
+            android:title="Japanese" />
+
+        <PreferenceScreen
+            android:key="Korean"
+            android:title="Korean" />
+
+        <PreferenceScreen
+            android:key="Lithuanian"
+            android:title="Lithuanian" />
+
+        <PreferenceScreen
+            android:key="Latvian"
+            android:title="Latvian" />
     </PreferenceCategory>
 
 </PreferenceScreen>

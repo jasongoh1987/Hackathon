@@ -2,6 +2,7 @@ package com.example.videosubtitling;
 
 import java.io.File;
 import java.util.concurrent.ExecutionException;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
@@ -16,7 +17,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.view.Gravity;
 import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,6 +27,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
+
 import com.example.videosubtitling.speechtotext.AppInfo;
 import com.example.videosubtitling.translation.BackgroundTranslationTask;
 import com.nuance.nmdp.speechkit.Prompt;
