@@ -16,13 +16,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.view.Gravity;
 import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -63,8 +62,8 @@ public class MainActivity extends Activity
 	private TextView mCapturedText;
 	private TextView mTranslatedText;
 	private TextView mTranslatedTextLabel;
-	private Button mStartAnalyzingButton;
-	private Button mStopAnalyzingButton;
+	private ImageView mStartAnalyzingButton;
+	private ImageView mStopAnalyzingButton;
 
 	private static SpeechKit sSpeechKit;
 
@@ -83,7 +82,7 @@ public class MainActivity extends Activity
 		setContentView(R.layout.activity_main);
 
 		getActionBar().setBackgroundDrawable(
-				new ColorDrawable(Color.parseColor("#42619C")));
+		    new ColorDrawable(Color.parseColor("#42619C")));
 
 		setVolumeControlStream(AudioManager.STREAM_MUSIC); // So that the 'Media
 		// Volume' applies
@@ -119,8 +118,8 @@ public class MainActivity extends Activity
 		mCapturedText = (TextView) findViewById(R.id.captured_text);
 		mTranslatedText = (TextView) findViewById(R.id.translated_text);
 		mTranslatedTextLabel = (TextView) findViewById(R.id.translated_text_label);
-		mStartAnalyzingButton = (Button) findViewById(R.id.start_recording);
-		mStopAnalyzingButton = (Button) findViewById(R.id.stop_recording);
+		mStartAnalyzingButton = (ImageView) findViewById(R.id.start_recording);
+		mStopAnalyzingButton = (ImageView) findViewById(R.id.stop_recording);
 
 		// Set stop analyzing button visibility to gone
 		mStopAnalyzingButton.setVisibility(View.GONE);
