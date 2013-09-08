@@ -44,6 +44,7 @@ public class MainActivity extends Activity {
 	private String mFileName = null;
 	private String mVideoFileName = "vid.mp4"; // TODO: allow user to specify
 												// the video
+	private static final int VIDEO_CHOOOSE_ID = 9;
 
 	private MediaRecorder mRecorder = null;
 	private MediaPlayer mPlayer = null;
@@ -112,6 +113,12 @@ public class MainActivity extends Activity {
 		// Play video
 		String videoPath = ENVIRONMENT_PATH + mVideoFileName;
 		new PlayVideoAsyncTask(videoPath).execute();
+	}
+
+	private void selectVideo() {
+		Intent videoChooser = new Intent(Intent.ACTION_GET_CONTENT);
+		videoChooser.setType("video/*");
+		startActivityForResult(videoChooser, VIDEO_CHOOOSE_ID);
 	}
 
 	private void startRecognizeSpeech() {
@@ -199,6 +206,8 @@ public class MainActivity extends Activity {
 			mCapturedText.setText(result);
 			if (!result.isEmpty()) {
 				translateCapturedTextToPreferredLanguage(result);
+			} else if (mTranslatedText != null) {
+				mTranslatedText.setText("");
 			}
 		}
 	}
@@ -217,10 +226,8 @@ public class MainActivity extends Activity {
 
 			});
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -335,8 +342,6 @@ public class MainActivity extends Activity {
 
 		@Override
 		protected Void doInBackground(Void... params) {
-
-			mVideoView.start();
 			mVideoView.setOnPreparedListener(new OnPreparedListener() {
 
 				public void onPrepared(MediaPlayer mp) {
@@ -345,8 +350,8 @@ public class MainActivity extends Activity {
 			});
 
 			do {
-				mCurrent = mVideoView.getCurrentPosition();
 				try {
+					mCurrent = mVideoView.getCurrentPosition();
 					publishProgress((int) (mCurrent * 100 / mDuration));
 					if (mProgressBar.getProgress() >= 100) {
 						break;

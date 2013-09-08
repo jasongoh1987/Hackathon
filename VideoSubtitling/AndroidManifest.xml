@@ -37,6 +37,12 @@
             android:finishOnTaskLaunch="true"
             android:theme="@android:style/Theme.NoTitleBar" >
         </activity>
+         <activity
+            android:name="com.example.videosubtitling.TranslateToLanguageSettingsActivity"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="true"
+            android:theme="@android:style/Theme.NoTitleBar" >
+        </activity>
     </application>
 
 </manifest>

@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <PreferenceCategory android:title="Language" >
+    <PreferenceCategory android:title="Settings" >
 
-        <EditTextPreference
-            android:key="prefUsername"
-            android:summary="English"
+        <PreferenceScreen
+            android:key="@string/translate_to_language"
             android:title="Language" /> <!-- TODO: full implementation -->
     </PreferenceCategory>
 
