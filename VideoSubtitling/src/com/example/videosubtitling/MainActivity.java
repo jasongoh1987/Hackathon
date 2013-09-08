@@ -6,6 +6,8 @@ import java.util.concurrent.ExecutionException;
 import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnPreparedListener;
@@ -73,6 +75,9 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
+		getActionBar().setBackgroundDrawable(
+				new ColorDrawable(Color.parseColor("#42619C")));
+
 		setVolumeControlStream(AudioManager.STREAM_MUSIC); // So that the 'Media
 		// Volume' applies
 		// to this activity
@@ -122,7 +127,6 @@ public class MainActivity extends Activity {
 		String videoPath = mVideoAbsolutePath;
 		mPlayVideoTask = new PlayVideoAsyncTask(videoPath);
 		mPlayVideoTask.execute();
-		chooseVideo();
 	}
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -289,6 +293,9 @@ public class MainActivity extends Activity {
 		case R.id.action_settings:
 			Intent intent = new Intent(this, SettingsActivity.class);
 			startActivity(intent);
+			break;
+		case R.id.choose_image:
+			chooseVideo();
 			break;
 		}
 		return true;
