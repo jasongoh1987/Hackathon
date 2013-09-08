@@ -137,6 +137,7 @@ public class MainActivity extends Activity {
 		});
 
 		mPlayVideoTask = new PlayVideoAsyncTask(mVideoAbsolutePath);
+		mPlayVideoTask.execute();
 	}
 
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
